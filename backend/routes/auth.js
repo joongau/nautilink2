@@ -9,6 +9,45 @@ const pool = new Pool(); // se base sur .env
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
 
+  const jwt = require('jsonwebtoken');
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return res.status(400).json({ message: 'Email et mot de passe requis' });
+
+  try {
+    const userQuery = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(401).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    const user = userQuery.rows[0];
+
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
+      return res.status(401).json({ message: 'Mot de passe invalide' });
+    }
+
+    // Générer le token JWT
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(200).json({ message: 'Connexion réussie', token });
+  } catch (error) {
+    console.error('Erreur login:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
   // Vérifie la présence des champs
   if (!email || !password) {
     return res.status(400).json({ message: 'Email et mot de passe requis' });
@@ -42,3 +81,16 @@ router.post('/register', async (req, res) => {
 });
 
 module.exports = router;
+
+const verifyToken = require('../middleware/authMiddleware');
+
+router.get('/profile', verifyToken, async (req, res) => {
+  try {
+    res.status(200).json({
+      message: 'Profil accessible',
+      user: req.user, // contient { userId, email }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
