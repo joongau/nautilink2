@@ -1,22 +1,35 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import LoginScreen from './screens/LoginScreen';
-import RegisterScreen from './screens/RegisterScreen';
-import HomeScreen from './screens/HomeScreen';
-
-const Stack = createNativeStackNavigator();
+import React, { useEffect, useState } from 'react';
+import { Text, View, StyleSheet } from 'react-native';
 
 export default function App() {
+  const [message, setMessage] = useState('Chargement...');
+
+  useEffect(() => {
+    fetch('http://192.168.1.39:3000/') // Remplace par ton IP locale
+      .then((res) => res.text())
+      .then((text) => setMessage(text))
+      .catch((err) => {
+        console.error(err);
+        setMessage("Erreur lors de l'appel API");
+      });
+  }, []);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      <Text style={styles.text}>{message}</Text>
+    </View>
   );
 }
-console.log('HomeScreen is:', HomeScreen);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#001f3f',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#ffffff',
+    fontSize: 20,
+  },
+});
