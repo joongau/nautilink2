@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "nautilink2-monorepo",
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
