@@ -11,7 +11,10 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenue sur NautiLink2 🚤</Text>
-      <Button title="Se déconnecter" onPress={handleLogout} />
+      <Button title="Voir mon profil" onPress={() => navigation.navigate('Profile')} />
+      <View style={{ marginTop: 10 }}>
+        <Button title="Se déconnecter" color="red" onPress={handleLogout} />
+      </View>
     </View>
   );
 }
