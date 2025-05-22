@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Mod
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker';
 import alertTypes from '../constants/alertTypes';
 
 export default function MapScreen({ navigation }) {
@@ -81,54 +80,6 @@ export default function MapScreen({ navigation }) {
     }
   };
 
-  const handleCapturePhoto = async () => {
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert("Permission refusée", "Autorisez l'accès à l'appareil photo pour prendre une photo.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      const token = await AsyncStorage.getItem('token');
-      const uri = result.assets[0].uri;
-      const filename = uri.split('/').pop();
-      const match = /\.(\w+)$/.exec(filename ?? '');
-      const type = match ? `image/${match[1]}` : `image`;
-
-      const formData = new FormData();
-      formData.append('photo', {
-        uri,
-        name: filename,
-        type,
-      });
-
-      try {
-        const response = await fetch('http://192.168.1.39:3000/api/alerts/photo', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-          body: formData,
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-          Alert.alert("✅ Photo enregistrée", `Alerte ID : ${data.alertId}`);
-        } else {
-          Alert.alert("Erreur", data.message || 'Échec de l’enregistrement');
-        }
-      } catch (error) {
-        console.error('Upload photo error:', error);
-        Alert.alert('Erreur réseau');
-      }
-    }
-  };
 
   const handleDeleteAlert = async (alertId) => {
     const token = await AsyncStorage.getItem('token');
@@ -240,9 +191,6 @@ export default function MapScreen({ navigation }) {
       <View style={styles.legend}>
         <Text>🟥 Danger • 🟧 Panne • 🟪 Obstacle</Text>
       </View>
-      <TouchableOpacity style={styles.floatingButtonLeft} onPress={handleCapturePhoto}>
-        <Text style={styles.floatingButtonText}>📷</Text>
-      </TouchableOpacity>
       <TouchableOpacity
         style={styles.floatingButton}
         onPress={() => navigation.navigate('AlertTypeScreen')}
@@ -365,18 +313,6 @@ const styles = StyleSheet.create({
     bottom: 30,
     right: 20,
     backgroundColor: '#e74c3c',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  },
-  floatingButtonLeft: {
-    position: 'absolute',
-    bottom: 30,
-    left: 20,
-    backgroundColor: '#3498db',
     width: 60,
     height: 60,
     borderRadius: 30,
