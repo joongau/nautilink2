@@ -9,6 +9,8 @@ import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import SplashScreen from './screens/SplashScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import AlertTypeScreen from './screens/AlertTypeScreen';
+import AlertFormScreen from './screens/AlertFormScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +24,8 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Map" component={MapScreen} />
+        <Stack.Screen name="AlertTypeScreen" component={AlertTypeScreen} options={{ title: 'Signaler une alerte' }} />
+        <Stack.Screen name="AlertFormScreen" component={AlertFormScreen} options={{ title: 'Détail de l’alerte' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

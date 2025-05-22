@@ -4,8 +4,9 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import alertTypes from '../constants/alertTypes';
 
-export default function MapScreen() {
+export default function MapScreen({ navigation }) {
   const [location, setLocation] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -49,43 +50,35 @@ export default function MapScreen() {
     })();
   }, []);
 
-  const handleReportAlert = async () => {
-    if (!location) return;
+  const handleReportAlert = async (type) => {
+    if (!location || !type) return;
 
-    Alert.prompt(
-      'Type d’alerte',
-      'Ex : danger, panne moteur, obstacle...',
-      async (type) => {
-        if (!type) return;
+    const token = await AsyncStorage.getItem('token');
+    try {
+      const response = await fetch('http://192.168.1.39:3000/api/alerts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          type,
+        }),
+      });
 
-        const token = await AsyncStorage.getItem('token');
-        try {
-          const response = await fetch('http://192.168.1.39:3000/api/alerts', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              latitude: location.latitude,
-              longitude: location.longitude,
-              type,
-            }),
-          });
-
-          const data = await response.json();
-          if (response.ok) {
-            Alert.alert('✅ Alerte enregistrée', `Type : ${type}`);
-            setAlerts((prev) => [data.alert, ...prev]);
-          } else {
-            Alert.alert('Erreur', data.message || 'Échec de l’enregistrement');
-          }
-        } catch (err) {
-          console.error('Erreur POST /api/alerts', err);
-          Alert.alert('Erreur réseau');
-        }
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert('✅ Alerte enregistrée', `Type : ${type}`);
+        setAlerts((prev) => [data.alert, ...prev]);
+      } else {
+        Alert.alert('Erreur', data.message || 'Échec de l’enregistrement');
       }
-    );
+    } catch (err) {
+      console.error('Erreur POST /api/alerts', err);
+      Alert.alert('Erreur réseau');
+    }
   };
 
   const handleCapturePhoto = async () => {
@@ -249,7 +242,10 @@ export default function MapScreen() {
       <TouchableOpacity style={styles.floatingButtonLeft} onPress={handleCapturePhoto}>
         <Text style={styles.floatingButtonText}>📷</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.floatingButton} onPress={handleReportAlert}>
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => navigation.navigate('AlertTypeScreen')}
+      >
         <Text style={styles.floatingButtonText}>🚨</Text>
       </TouchableOpacity>
       <View style={styles.alertCount}>
@@ -443,5 +439,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffffcc',
     padding: 6,
     borderRadius: 6,
+  },
+  alertTypeButton: {
+    position: 'absolute',
+    backgroundColor: '#e67e22',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+  },
+  alertTypeText: {
+    fontSize: 24,
+    color: 'white',
+  },
+  alertTypeLabel: {
+    position: 'absolute',
+    right: 70,
+    backgroundColor: '#ffffffee',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    color: '#333',
+    fontSize: 12,
   }
 });
