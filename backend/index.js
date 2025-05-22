@@ -1,7 +1,9 @@
 require('dotenv').config();
+const alertsRoutes = require('./routes/alerts');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 
 const app = express();
 
@@ -15,8 +17,8 @@ app.use(express.json());
 
 const authRoutes = require('./routes/auth');
 app.use('/api', authRoutes);
-
-
+app.use('/api/alerts', alertsRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur l’API de NautiLink2 🚤');
