@@ -1,0 +1,87 @@
+
+
+import React from 'react';
+import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+
+export default function AlertDetailModal({ visible, onClose, alert }) {
+  if (!alert) return null;
+
+  return (
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <Text style={styles.closeText}>✖</Text>
+        </TouchableOpacity>
+        <View style={styles.container}>
+          <Text style={styles.title}>{alert.type}</Text>
+          <Text style={styles.sub}>👤 Utilisateur #{alert.user_id}</Text>
+          <Text style={styles.sub}>{new Date(alert.created_at).toLocaleString()}</Text>
+          {alert.comment ? (
+            <View style={styles.commentBox}>
+              <Text style={styles.comment}>{alert.comment}</Text>
+            </View>
+          ) : null}
+          {alert.photo_url && (
+            <Image
+              source={{ uri: `http://192.168.1.39:3000/uploads/${alert.photo_url}` }}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    width: '85%',
+    alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 1,
+  },
+  closeText: {
+    color: 'white',
+    fontSize: 28,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  sub: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#444',
+  },
+  commentBox: {
+    backgroundColor: '#f2f2f2',
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 12,
+  },
+  comment: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  image: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+});
