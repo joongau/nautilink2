@@ -15,7 +15,7 @@ export default function MapScreen({ navigation }) {
   const markerRefs = useRef({});
   const [selectedAlertId, setSelectedAlertId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImageUri, setSelectedImageUri] = useState(null);
+  const [selectedAlert, setSelectedAlert] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -213,21 +213,10 @@ export default function MapScreen({ navigation }) {
                   ? 'purple'
                   : 'red'
               }
+              // Affiche la fiche alerte dans le modal (comportement par défaut)
               onPress={() => {
-                let message = `📍 Coordonnées : ${alert.latitude}, ${alert.longitude}\n📅 Date : ${new Date(alert.created_at).toLocaleString()}\n👤 Utilisateur : #${alert.user_id}`;
-                if (alert.comment) message += `\n📝 Commentaire : ${alert.comment}`;
-                if (alert.photo_url) message += `\n🖼️ Photo jointe`;
-
-                Alert.alert(`🧭 Alerte : ${alert.type}`, message, [
-                  alert.photo_url ? {
-                    text: 'Voir la photo',
-                    onPress: () => {
-                      setSelectedImageUri(`http://192.168.1.39:3000/uploads/${alert.photo_url}`);
-                      setModalVisible(true);
-                    }
-                  } : undefined,
-                  { text: 'OK' }
-                ].filter(Boolean));
+                setSelectedAlert(alert);
+                setModalVisible(true);
               }}
             />
           ))}
@@ -275,36 +264,24 @@ export default function MapScreen({ navigation }) {
                 key={alert.id}
                 style={styles.alertCard}
                 onPress={() => {
-                  setSelectedAlertId(alert.id);
-                  mapRef.current.animateToRegion({
-                    latitude: parseFloat(alert.latitude),
-                    longitude: parseFloat(alert.longitude),
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  }, 500);
-                  setTimeout(() => {
-                    if (markerRefs.current[alert.id]) {
-                      markerRefs.current[alert.id].showCallout();
-                    }
-                  }, 600);
+                  setSelectedAlert(alert);
+                  setModalVisible(true);
                 }}
               >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.alertText}>
                     • {alert.type} — {new Date(alert.created_at).toLocaleTimeString()} par utilisateur #{alert.user_id}
                   </Text>
+                  {alert.comment ? (
+                    <Text style={styles.alertComment}>
+                      {alert.comment}
+                    </Text>
+                  ) : null}
                   {alert.photo_url ? (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedImageUri(`http://192.168.1.39:3000/uploads/${alert.photo_url}`);
-                        setModalVisible(true);
-                      }}
-                    >
-                      <Image
-                        source={{ uri: `http://192.168.1.39:3000/uploads/${alert.photo_url}` }}
-                        style={styles.alertImage}
-                      />
-                    </TouchableOpacity>
+                    <Image
+                      source={{ uri: `http://192.168.1.39:3000/uploads/${alert.photo_url}` }}
+                      style={styles.alertImage}
+                    />
                   ) : null}
                 </View>
                 {alert.isMine && (
@@ -316,16 +293,58 @@ export default function MapScreen({ navigation }) {
             ))}
         </ScrollView>
       </View>
-      <Modal visible={modalVisible} transparent={true}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' }}>
-          <Pressable onPress={() => setModalVisible(false)} style={{ position: 'absolute', top: 40, right: 20, zIndex: 1 }}>
-            <Text style={{ color: 'white', fontSize: 20 }}>✖</Text>
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setModalVisible(false);
+          setSelectedAlert(null);
+        }}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center' }}>
+          <Pressable
+            onPress={() => {
+              setModalVisible(false);
+              setSelectedAlert(null);
+            }}
+            style={{ position: 'absolute', top: 40, right: 20, zIndex: 1 }}
+          >
+            <Text style={{ color: 'white', fontSize: 22 }}>✖</Text>
           </Pressable>
-          <Image
-            source={{ uri: selectedImageUri }}
-            style={{ width: '90%', height: '70%', borderRadius: 12 }}
-            resizeMode="contain"
-          />
+          {selectedAlert && (
+            <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 20, width: '85%', alignItems: 'center' }}>
+              <Text style={{ fontSize: 26, fontWeight: 'bold', marginBottom: 8 }}>
+                {selectedAlert.type.charAt(0).toUpperCase() + selectedAlert.type.slice(1)}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                <Text style={{ fontSize: 16 }}>👤 Utilisateur #{selectedAlert.user_id}</Text>
+              </View>
+              <Text style={{ fontSize: 13, fontStyle: 'italic', color: '#555', marginBottom: 14 }}>
+                {new Date(selectedAlert.created_at).toLocaleString()}
+              </Text>
+              {selectedAlert.comment ? (
+                <View style={{ backgroundColor: '#f2f2f2', padding: 12, borderRadius: 8, marginBottom: 14 }}>
+                  <Text style={{ fontSize: 14, textAlign: 'center' }}>{selectedAlert.comment}</Text>
+                </View>
+              ) : null}
+              {selectedAlert.photo_url ? (
+                <Image
+                  source={{ uri: `http://192.168.1.39:3000/uploads/${selectedAlert.photo_url}` }}
+                  style={{ width: '100%', height: 300, borderRadius: 10 }}
+                  resizeMode="contain"
+                />
+              ) : null}
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedAlert(null);
+                }}
+              >
+                <Text style={{ color: '#e74c3c', fontWeight: 'bold', fontSize: 16 }}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </Modal>
     </>
@@ -416,6 +435,12 @@ const styles = StyleSheet.create({
   },
   alertText: {
     fontSize: 13,
+  },
+  alertComment: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 2,
+    color: '#333',
   },
   alertImage: {
     width: 50,
