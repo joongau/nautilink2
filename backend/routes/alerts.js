@@ -80,18 +80,19 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post('/photo', verifyToken, upload.single('photo'), async (req, res) => {
+router.post('/photo', verifyToken, upload.fields([{ name: 'photo', maxCount: 1 }]), async (req, res) => {
   const userId = req.user.userId;
-  const file = req.file;
+  const file = req.files?.photo?.[0] ?? null;
+  const { latitude, longitude, type, comment } = req.body;
 
-  if (!file) {
-    return res.status(400).json({ message: 'Aucun fichier reçu.' });
+  if (!latitude || !longitude || !type) {
+    return res.status(400).json({ message: 'Latitude, longitude et type sont requis.' });
   }
 
   try {
     const result = await pool.query(
-      'INSERT INTO alerts (latitude, longitude, type, user_id, photo_url) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [0, 0, 'photo', userId, file.filename] // ici lat/lng = 0 car non fournis
+      'INSERT INTO alerts (latitude, longitude, type, user_id, photo_url, comment) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [latitude, longitude, type, userId, file ? file.filename : null, comment || null]
     );
 
     res.status(201).json({ message: 'Photo enregistrée', alertId: result.rows[0].id });

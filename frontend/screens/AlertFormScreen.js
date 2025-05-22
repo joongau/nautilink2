@@ -88,7 +88,7 @@ export default function AlertFormScreen() {
       />
 
       <TouchableOpacity onPress={handleTakePhoto} style={styles.photoButton}>
-        <Text style={styles.photoButtonText}>📷 Joindre une photo</Text>
+        <Text style={styles.photoButtonText}>📷 Joindre une photo (facultatif)</Text>
       </TouchableOpacity>
 
       {photo && (

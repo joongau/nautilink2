@@ -203,7 +203,9 @@ export default function MapScreen({ navigation }) {
                 longitude: parseFloat(alert.longitude),
               }}
               title={alert.type}
-              description={`Signalé par utilisateur #${alert.user_id}`}
+              description={`Signalé par utilisateur #${alert.user_id}`
+                + (alert.comment ? `\nCommentaire : ${alert.comment}` : '')
+                + (alert.photo_url ? `\nPhoto jointe` : '')}
               pinColor={
                 alert.type.toLowerCase().includes('panne')
                   ? 'orange'
@@ -212,10 +214,20 @@ export default function MapScreen({ navigation }) {
                   : 'red'
               }
               onPress={() => {
-                Alert.alert(
-                  `🧭 Alerte : ${alert.type}`,
-                  `Localisation : ${alert.latitude}, ${alert.longitude}\nDate : ${new Date(alert.created_at).toLocaleString()}\nUtilisateur : #${alert.user_id}`
-                );
+                let message = `📍 Coordonnées : ${alert.latitude}, ${alert.longitude}\n📅 Date : ${new Date(alert.created_at).toLocaleString()}\n👤 Utilisateur : #${alert.user_id}`;
+                if (alert.comment) message += `\n📝 Commentaire : ${alert.comment}`;
+                if (alert.photo_url) message += `\n🖼️ Photo jointe`;
+
+                Alert.alert(`🧭 Alerte : ${alert.type}`, message, [
+                  alert.photo_url ? {
+                    text: 'Voir la photo',
+                    onPress: () => {
+                      setSelectedImageUri(`http://192.168.1.39:3000/uploads/${alert.photo_url}`);
+                      setModalVisible(true);
+                    }
+                  } : undefined,
+                  { text: 'OK' }
+                ].filter(Boolean));
               }}
             />
           ))}
