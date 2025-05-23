@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Image, ScrollView, Animated, PanResponder, Dimensions } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,6 +17,44 @@ export default function MapScreen({ navigation }) {
   const [selectedAlertId, setSelectedAlertId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
+
+  const screenHeight = Dimensions.get('window').height;
+  const sheetHeight = screenHeight * 0.6;
+  const animatedSheetY = useRef(new Animated.Value(-sheetHeight + 50)).current;
+  // Ouvre le panneau animé au lancement
+  useEffect(() => {
+    Animated.spring(animatedSheetY, {
+      toValue: 0,
+      useNativeDriver: false,
+    }).start();
+  }, []);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 10,
+      onPanResponderMove: (_, gestureState) => {
+        const newY = gestureState.dy + (animatedSheetY._value || 0);
+        if (newY >= -sheetHeight + 50 && newY <= 0) {
+          animatedSheetY.setValue(newY);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 50) {
+          // swipe down to open
+          Animated.spring(animatedSheetY, {
+            toValue: 0,
+            useNativeDriver: false,
+          }).start();
+        } else {
+          // swipe up to close
+          Animated.spring(animatedSheetY, {
+            toValue: -sheetHeight + 50,
+            useNativeDriver: false,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     (async () => {
@@ -177,25 +215,44 @@ export default function MapScreen({ navigation }) {
       >
         <Text style={styles.reportButtonText}>➕ Signaler</Text>
       </TouchableOpacity>
-      <View style={styles.alertListTitleContainer}>
-        <Text style={styles.alertListTitle}>📋 Alertes récentes</Text>
-      </View>
-      <View style={styles.alertList}>
-        <ScrollView>
-          {alerts
-            .filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType))
-            .map((alert) => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                onPress={() => {
-                  setSelectedAlert(alert);
-                  setModalVisible(true);
-                }}
-              />
-            ))}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            height: sheetHeight,
+            backgroundColor: 'rgba(232, 247, 255, 0.95)',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -3 },
+            shadowOpacity: 0.2,
+            shadowRadius: 5,
+            elevation: 6,
+            top: animatedSheetY,
+          },
+        ]}
+      >
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}>
+          {alerts.map((alert) => (
+            <AlertCard
+              key={alert.id}
+              alert={alert}
+              onPress={() => {
+                setSelectedAlert(alert);
+                setModalVisible(true);
+              }}
+            />
+          ))}
         </ScrollView>
-      </View>
+
+        <View style={{ alignItems: 'center', paddingVertical: 10 }}>
+          <Text style={{ fontWeight: 'bold', color: '#0077B6' }}>📋 Alertes récentes</Text>
+          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa', marginTop: 8 }} />
+        </View>
+      </Animated.View>
       <AlertDetailModal
         visible={modalVisible}
         onClose={() => {
@@ -231,19 +288,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   alertList: {
-    position: 'absolute',
-    bottom: 170,
-    left: 10,
-    right: 10,
-    backgroundColor: 'rgba(232, 247, 255, 0.95)', // soft marine blue
-    padding: 12,
-    borderRadius: 16,
-    maxHeight: 180,
-    shadowColor: '#0077B6',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 6,
+    // removed
   },
   alertItem: {
     marginBottom: 4,
@@ -319,22 +364,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   alertListTitleContainer: {
-    position: 'absolute',
-    bottom: 360,
-    left: 20,
-    backgroundColor: '#0077B6',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    // removed
   },
   alertListTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
+    // removed
   }
 });
