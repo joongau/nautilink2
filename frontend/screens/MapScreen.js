@@ -17,6 +17,7 @@ export default function MapScreen({ navigation }) {
   const [selectedAlertId, setSelectedAlertId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
+  const [isListExpanded, setIsListExpanded] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -177,25 +178,32 @@ export default function MapScreen({ navigation }) {
       >
         <Text style={styles.reportButtonText}>➕ Signaler</Text>
       </TouchableOpacity>
-      <View style={styles.alertListTitleContainer}>
-        <Text style={styles.alertListTitle}>📋 Alertes récentes</Text>
-      </View>
-      <View style={styles.alertList}>
-        <ScrollView>
-          {alerts
-            .filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType))
-            .map((alert) => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                onPress={() => {
-                  setSelectedAlert(alert);
-                  setModalVisible(true);
-                }}
-              />
-            ))}
-        </ScrollView>
-      </View>
+      <TouchableOpacity
+        style={styles.alertListTitleContainer}
+        onPress={() => setIsListExpanded(!isListExpanded)}
+      >
+        <Text style={styles.alertListTitle}>
+          {isListExpanded ? '📋 Masquer les alertes' : '📋 Afficher les alertes'}
+        </Text>
+      </TouchableOpacity>
+      {isListExpanded && (
+        <View style={styles.alertList}>
+          <ScrollView>
+            {alerts
+              .filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType))
+              .map((alert) => (
+                <AlertCard
+                  key={alert.id}
+                  alert={alert}
+                  onPress={() => {
+                    setSelectedAlert(alert);
+                    setModalVisible(true);
+                  }}
+                />
+              ))}
+          </ScrollView>
+        </View>
+      )}
       <AlertDetailModal
         visible={modalVisible}
         onClose={() => {
