@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 
@@ -9,9 +7,6 @@ export default function AlertDetailModal({ visible, onClose, alert }) {
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <Text style={styles.closeText}>✖</Text>
-        </TouchableOpacity>
         <View style={styles.container}>
           <Text style={styles.title}>{alert.type}</Text>
           <Text style={styles.sub}>👤 Utilisateur #{alert.user_id}</Text>
@@ -28,6 +23,9 @@ export default function AlertDetailModal({ visible, onClose, alert }) {
               resizeMode="contain"
             />
           )}
+          <TouchableOpacity onPress={onClose} style={styles.closeButtonBottom}>
+            <Text style={styles.closeButtonText}>Fermer</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -47,12 +45,6 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '85%',
     alignItems: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 1,
   },
   closeText: {
     color: 'white',
@@ -84,4 +76,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
   },
+  closeButtonBottom: {
+    marginTop: 20,
+    backgroundColor: '#e74c3c',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  }
 });

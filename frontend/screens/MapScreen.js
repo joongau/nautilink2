@@ -159,53 +159,28 @@ export default function MapScreen({ navigation }) {
               description={`Signalé par utilisateur #${alert.user_id}`
                 + (alert.comment ? `\nCommentaire : ${alert.comment}` : '')
                 + (alert.photo_url ? `\nPhoto jointe` : '')}
-              pinColor={
-                alert.type.toLowerCase().includes('panne')
-                  ? 'orange'
-                  : alert.type.toLowerCase().includes('obstacle')
-                  ? 'purple'
-                  : 'red'
-              }
-              // Affiche la fiche alerte dans le modal (comportement par défaut)
               onPress={() => {
                 setSelectedAlert(alert);
                 setModalVisible(true);
               }}
-            />
+            >
+              <Text style={{ fontSize: 24 }}>
+                {alertTypes.find((a) => a.type === alert.type)?.icon || '❓'}
+              </Text>
+            </Marker>
           ))}
       </MapView>
-      <View style={styles.filterButtons}>
-        {['toutes', 'danger', 'panne', 'obstacle'].map((type) => (
-          <TouchableOpacity
-            key={type}
-            onPress={() => setFilterType(type)}
-            style={[
-              styles.filterButton,
-              filterType === type && styles.filterButtonActive,
-            ]}
-          >
-            <Text style={{ color: filterType === type ? 'white' : 'black' }}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={styles.legend}>
-        <Text>🟥 Danger • 🟧 Panne • 🟪 Obstacle</Text>
-      </View>
+
       <TouchableOpacity
-        style={styles.floatingButton}
+        style={styles.reportButton}
         onPress={() => navigation.navigate('AlertTypeScreen')}
       >
-        <Text style={styles.floatingButtonText}>🚨</Text>
+        <Text style={styles.reportButtonText}>➕ Signaler</Text>
       </TouchableOpacity>
-      <View style={styles.alertCount}>
-        <Text>
-          {alerts.filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType)).length} alerte(s) affichée(s)
-        </Text>
+      <View style={styles.alertListTitleContainer}>
+        <Text style={styles.alertListTitle}>📋 Alertes récentes</Text>
       </View>
       <View style={styles.alertList}>
-        <Text style={styles.alertListTitle}>📋 Dernières alertes :</Text>
         <ScrollView>
           {alerts
             .filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType))
@@ -242,22 +217,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  floatingButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    backgroundColor: '#e74c3c',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  },
-  floatingButtonText: {
-    color: '#fff',
-    fontSize: 30,
-  },
   legend: {
     position: 'absolute',
     bottom: 100,
@@ -276,14 +235,15 @@ const styles = StyleSheet.create({
     bottom: 170,
     left: 10,
     right: 10,
-    backgroundColor: '#ffffffcc',
-    padding: 10,
-    borderRadius: 8,
-    maxHeight: 150,
-  },
-  alertListTitle: {
-    fontWeight: 'bold',
-    marginBottom: 6,
+    backgroundColor: 'rgba(232, 247, 255, 0.95)', // soft marine blue
+    padding: 12,
+    borderRadius: 16,
+    maxHeight: 180,
+    shadowColor: '#0077B6',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 6,
   },
   alertItem: {
     marginBottom: 4,
@@ -315,14 +275,6 @@ const styles = StyleSheet.create({
   filterButtonActive: {
     backgroundColor: '#007bff',
   },
-  alertCount: {
-    position: 'absolute',
-    bottom: 330,
-    left: 20,
-    backgroundColor: '#ffffffcc',
-    padding: 6,
-    borderRadius: 6,
-  },
   alertTypeButton: {
     position: 'absolute',
     backgroundColor: '#e67e22',
@@ -346,5 +298,43 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     color: '#333',
     fontSize: 12,
+  },
+  reportButton: {
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
+    backgroundColor: '#0077B6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  reportButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  alertListTitleContainer: {
+    position: 'absolute',
+    bottom: 360,
+    left: 20,
+    backgroundColor: '#0077B6',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  alertListTitle: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   }
 });

@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { TouchableOpacity, View, Text, Image, StyleSheet } from 'react-native';
 
@@ -27,31 +25,35 @@ export default function AlertCard({ alert, onPress }) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 8,
-    marginVertical: 5,
+    backgroundColor: '#E8F7FF', // soft blue
+    padding: 12,
+    borderRadius: 16,
+    marginVertical: 6,
+    marginHorizontal: 8,
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+    shadowColor: '#0077B6',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   text: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#023E8A', // navy blue
   },
   comment: {
-    fontSize: 12,
+    fontSize: 13,
     fontStyle: 'italic',
-    marginTop: 2,
-    color: '#333',
+    marginTop: 4,
+    color: '#023E8A',
   },
   thumbnail: {
-    width: 50,
-    height: 50,
-    marginLeft: 10,
-    borderRadius: 6,
+    width: 52,
+    height: 52,
+    marginLeft: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#90E0EF',
   },
 });
