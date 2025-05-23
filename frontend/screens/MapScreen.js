@@ -223,34 +223,45 @@ export default function MapScreen({ navigation }) {
             left: 0,
             right: 0,
             height: sheetHeight,
-            backgroundColor: 'rgba(232, 247, 255, 0.95)',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            backgroundColor: '#FFFFFFEE',
+            borderBottomLeftRadius: 20,
+            borderBottomRightRadius: 20,
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: 0.2,
-            shadowRadius: 5,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
             elevation: 6,
             top: animatedSheetY,
+            overflow: 'hidden',
           },
         ]}
       >
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}>
-          {alerts.map((alert) => (
-            <AlertCard
-              key={alert.id}
-              alert={alert}
-              onPress={() => {
-                setSelectedAlert(alert);
-                setModalVisible(true);
-              }}
-            />
-          ))}
-        </ScrollView>
-
-        <View style={{ alignItems: 'center', paddingVertical: 10 }}>
-          <Text style={{ fontWeight: 'bold', color: '#0077B6' }}>📋 Alertes récentes</Text>
-          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa', marginTop: 8 }} />
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: 24,
+              flexDirection: 'column-reverse',
+            }}
+            showsVerticalScrollIndicator={false}
+            inverted
+          >
+            {alerts.map((alert) => (
+              <AlertCard
+                key={alert.id}
+                alert={alert}
+                onPress={() => {
+                  setSelectedAlert(alert);
+                  setModalVisible(true);
+                }}
+              />
+            ))}
+          </ScrollView>
+          <View style={{ alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#ddd' }}>
+            <Text style={{ fontWeight: '600', fontSize: 16, color: '#023E8A', marginBottom: 6 }}>📋 Alertes récentes</Text>
+            <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa' }} />
+          </View>
         </View>
       </Animated.View>
       <AlertDetailModal
