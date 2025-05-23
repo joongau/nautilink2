@@ -5,11 +5,5 @@
   "workspaces": [
     "frontend",
     "backend"
-  ],
-  "dependencies": {
-    "@gorhom/bottom-sheet": "^5.1.4",
-    "react-native-gesture-handler": "~2.24.0",
-    "react-native-reanimated": "~3.17.4",
-    "react-native-safe-area-context": "5.4.0"
-  }
+  ]
 }

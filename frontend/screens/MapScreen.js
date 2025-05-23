@@ -1,21 +1,11 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Image, ScrollView } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import alertTypes from '../constants/alertTypes';
 import AlertDetailModal from '../components/AlertDetailModal';
 import AlertCard from '../components/AlertCard';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-const CustomHandle = () => (
-  <View style={{ alignItems: 'center', paddingVertical: 10 }}>
-    <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa', marginBottom: 6 }} />
-    <Text style={{ color: '#555', fontSize: 13 }}>⬆️ Glissez pour voir les alertes</Text>
-  </View>
-);
 
 export default function MapScreen({ navigation }) {
   const [location, setLocation] = useState(null);
@@ -27,8 +17,6 @@ export default function MapScreen({ navigation }) {
   const [selectedAlertId, setSelectedAlertId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
-  const bottomSheetRef = useRef(null);
-  const snapPoints = useMemo(() => ['10%', '40%', '70%'], []);
 
   useEffect(() => {
     (async () => {
@@ -136,7 +124,7 @@ export default function MapScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <>
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -156,6 +144,12 @@ export default function MapScreen({ navigation }) {
           .filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType))
           .map((alert) => (
             <Marker
+              ref={(ref) => {
+                if (ref) markerRefs.current[alert.id] = ref;
+                if (ref && selectedAlertId === alert.id) {
+                  ref.showCallout();
+                }
+              }}
               key={alert.id}
               coordinate={{
                 latitude: parseFloat(alert.latitude),
@@ -183,31 +177,25 @@ export default function MapScreen({ navigation }) {
       >
         <Text style={styles.reportButtonText}>➕ Signaler</Text>
       </TouchableOpacity>
-
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={0}
-        snapPoints={snapPoints}
-        backgroundStyle={{
-          backgroundColor: 'rgba(232, 247, 255, 0.95)',
-          borderRadius: 16,
-        }}
-        handleComponent={CustomHandle}
-      >
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, flexGrow: 1 }}>
-          {alerts.map((alert) => (
-            <AlertCard
-              key={alert.id}
-              alert={alert}
-              onPress={() => {
-                setSelectedAlert(alert);
-                setModalVisible(true);
-              }}
-            />
-          ))}
+      <View style={styles.alertListTitleContainer}>
+        <Text style={styles.alertListTitle}>📋 Alertes récentes</Text>
+      </View>
+      <View style={styles.alertList}>
+        <ScrollView>
+          {alerts
+            .filter((a) => filterType === 'toutes' || a.type.toLowerCase().includes(filterType))
+            .map((alert) => (
+              <AlertCard
+                key={alert.id}
+                alert={alert}
+                onPress={() => {
+                  setSelectedAlert(alert);
+                  setModalVisible(true);
+                }}
+              />
+            ))}
         </ScrollView>
-      </BottomSheet>
-
+      </View>
       <AlertDetailModal
         visible={modalVisible}
         onClose={() => {
@@ -216,7 +204,7 @@ export default function MapScreen({ navigation }) {
         }}
         alert={selectedAlert}
       />
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -241,6 +229,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 3,
+  },
+  alertList: {
+    position: 'absolute',
+    bottom: 170,
+    left: 10,
+    right: 10,
+    backgroundColor: 'rgba(232, 247, 255, 0.95)', // soft marine blue
+    padding: 12,
+    borderRadius: 16,
+    maxHeight: 180,
+    shadowColor: '#0077B6',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 6,
   },
   alertItem: {
     marginBottom: 4,
@@ -315,4 +318,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  alertListTitleContainer: {
+    position: 'absolute',
+    bottom: 360,
+    left: 20,
+    backgroundColor: '#0077B6',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  alertListTitle: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  }
 });
