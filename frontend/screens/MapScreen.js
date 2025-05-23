@@ -17,6 +17,8 @@ export default function MapScreen({ navigation }) {
   const [selectedAlertId, setSelectedAlertId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const screenHeight = Dimensions.get('window').height;
   const sheetHeight = screenHeight * 0.6;
@@ -56,6 +58,30 @@ export default function MapScreen({ navigation }) {
     })
   ).current;
 
+  // Fonction pour charger les alertes (réutilisable pour le rafraîchissement auto)
+  const fetchAlerts = async () => {
+    setIsRefreshing(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const res = await fetch('http://192.168.1.39:3000/api/alerts', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      const now = new Date();
+      const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const filtered = (data.alerts || []).filter(alert => new Date(alert.created_at) >= last24h);
+      const userId = JSON.parse(atob(token.split('.')[1])).userId;
+      const withOwnership = filtered.map(a => ({ ...a, isMine: a.user_id === userId }));
+      setAlerts(withOwnership);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Erreur lors du chargement des alertes:', err);
+    }
+    setIsRefreshing(false);
+  };
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -66,27 +92,10 @@ export default function MapScreen({ navigation }) {
 
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc.coords);
-
-      const token = await AsyncStorage.getItem('token');
-      try {
-        const res = await fetch('http://192.168.1.39:3000/api/alerts', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        const now = new Date();
-        const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        const filtered = (data.alerts || []).filter(alert => {
-          return new Date(alert.created_at) >= last24h;
-        });
-        const userId = JSON.parse(atob(token.split('.')[1])).userId;
-        const withOwnership = filtered.map(a => ({ ...a, isMine: a.user_id === userId }));
-        setAlerts(withOwnership);
-      } catch (err) {
-        console.error('Erreur lors du chargement des alertes:', err);
-      }
     })();
+    fetchAlerts();
+    const intervalId = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleReportAlert = async (type) => {
@@ -260,6 +269,14 @@ export default function MapScreen({ navigation }) {
           </ScrollView>
           <View style={{ alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#ddd' }}>
             <Text style={{ fontWeight: '600', fontSize: 16, color: '#023E8A', marginBottom: 6 }}>📋 Alertes récentes</Text>
+            {isRefreshing && (
+              <ActivityIndicator size="small" color="#888" style={{ marginBottom: 4 }} />
+            )}
+            {lastUpdated && (
+              <Text style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>
+                Mis à jour à {lastUpdated.toLocaleTimeString()}
+              </Text>
+            )}
             <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa' }} />
           </View>
         </View>
