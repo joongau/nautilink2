@@ -1,8 +1,20 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Image, StyleSheet, Linking, Platform } from 'react-native';
 
 export default function AlertDetailModal({ visible, onClose, alert }) {
   if (!alert) return null;
+
+  const openInMaps = () => {
+    if (!alert) return;
+    const lat = alert.latitude;
+    const lng = alert.longitude;
+    const label = encodeURIComponent(alert.type || 'Alerte NautiLink');
+    const url = Platform.select({
+      ios: `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`,
+      android: `geo:${lat},${lng}?q=${lat},${lng}(${label})`,
+    });
+    Linking.openURL(url);
+  };
 
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
@@ -23,6 +35,9 @@ export default function AlertDetailModal({ visible, onClose, alert }) {
               resizeMode="contain"
             />
           )}
+          <TouchableOpacity onPress={openInMaps} style={styles.mapsButton}>
+            <Text style={styles.mapsButtonText}>📍 Ouvrir dans Maps</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={onClose} style={styles.closeButtonBottom}>
             <Text style={styles.closeButtonText}>Fermer</Text>
           </TouchableOpacity>
@@ -87,5 +102,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
-  }
+  },
+  mapsButton: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: '#0077B6',
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  mapsButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });
