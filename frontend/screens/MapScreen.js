@@ -22,7 +22,7 @@ export default function MapScreen({ navigation }) {
 
   const screenHeight = Dimensions.get('window').height;
   const sheetHeight = screenHeight * 0.6;
-  const animatedSheetY = useRef(new Animated.Value(-sheetHeight + 50)).current;
+  const animatedSheetY = useRef(new Animated.Value(-sheetHeight + 250)).current;
   // Ouvre le panneau animé au lancement
   useEffect(() => {
     Animated.spring(animatedSheetY, {
@@ -36,7 +36,7 @@ export default function MapScreen({ navigation }) {
       onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 10,
       onPanResponderMove: (_, gestureState) => {
         const newY = gestureState.dy + (animatedSheetY._value || 0);
-        if (newY >= -sheetHeight + 50 && newY <= 0) {
+        if (newY >= -sheetHeight + 250 && newY <= 0) {
           animatedSheetY.setValue(newY);
         }
       },
@@ -50,7 +50,7 @@ export default function MapScreen({ navigation }) {
         } else {
           // swipe up to close
           Animated.spring(animatedSheetY, {
-            toValue: -sheetHeight + 50,
+            toValue: -sheetHeight + 250,
             useNativeDriver: false,
           }).start();
         }
@@ -249,12 +249,10 @@ export default function MapScreen({ navigation }) {
           <ScrollView
             contentContainerStyle={{
               paddingHorizontal: 16,
-              paddingTop: 12,
+              paddingTop: 48,
               paddingBottom: 24,
-              flexDirection: 'column-reverse',
             }}
             showsVerticalScrollIndicator={false}
-            inverted
           >
             {alerts.map((alert) => (
               <AlertCard
@@ -267,17 +265,17 @@ export default function MapScreen({ navigation }) {
               />
             ))}
           </ScrollView>
-          <View style={{ alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#ddd' }}>
-            <Text style={{ fontWeight: '600', fontSize: 16, color: '#023E8A', marginBottom: 6 }}>📋 Alertes récentes</Text>
+          <View style={{ alignItems: 'center', paddingTop: 8, paddingBottom: 12 }}>
+            <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa', marginBottom: 6 }} />
+            <Text style={{ fontWeight: '600', fontSize: 16, color: '#023E8A', marginBottom: 4 }}>📋 Alertes récentes</Text>
             {isRefreshing && (
               <ActivityIndicator size="small" color="#888" style={{ marginBottom: 4 }} />
             )}
             {lastUpdated && (
-              <Text style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>
+              <Text style={{ fontSize: 10, color: '#888' }}>
                 Mis à jour à {lastUpdated.toLocaleTimeString()}
               </Text>
             )}
-            <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#aaa' }} />
           </View>
         </View>
       </Animated.View>
