@@ -19,7 +19,7 @@ export default function SplashScreen({ navigation }) {
         });
 
         if (response.ok) {
-          navigation.replace('Home');
+          navigation.replace('Tabs');
         } else {
           await AsyncStorage.removeItem('token');
           navigation.replace('Login');

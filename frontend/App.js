@@ -6,7 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import HomeScreen from './screens/HomeScreen';
+import TabsNavigator from './components/TabsNavigator';
 import SplashScreen from './screens/SplashScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AlertTypeScreen from './screens/AlertTypeScreen';
@@ -21,7 +21,7 @@ export default function App() {
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Tabs" component={TabsNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Map" component={MapScreen} />
         <Stack.Screen name="AlertTypeScreen" component={AlertTypeScreen} options={{ title: 'Signaler une alerte' }} />
